@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VR_Raytracing", "VR_Raytracing\VR_Raytracing.vcxproj", "{4511A844-5522-4E43-970B-64CF3B251635}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2B9CD073-503A-4F26-8895-6F0244DF1515}"
+	ProjectSection(SolutionItems) = preProject
+		VR_Raytracing\camera.cpp = VR_Raytracing\camera.cpp
+		VR_Raytracing\camera.h = VR_Raytracing\camera.h
+		VR_Raytracing\canvas.cpp = VR_Raytracing\canvas.cpp
+		VR_Raytracing\canvas.h = VR_Raytracing\canvas.h
+		VR_Raytracing\display.cpp = VR_Raytracing\display.cpp
+		VR_Raytracing\display.h = VR_Raytracing\display.h
+		VR_Raytracing\framebuffer.cpp = VR_Raytracing\framebuffer.cpp
+		VR_Raytracing\framebuffer.h = VR_Raytracing\framebuffer.h
+		VR_Raytracing\main.cpp = VR_Raytracing\main.cpp
+		VR_Raytracing\shaderloader.cpp = VR_Raytracing\shaderloader.cpp
+		VR_Raytracing\shaderloader.h = VR_Raytracing\shaderloader.h
+		VR_Raytracing\vrsystem.cpp = VR_Raytracing\vrsystem.cpp
+		VR_Raytracing\vrsystem.h = VR_Raytracing\vrsystem.h
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4511A844-5522-4E43-970B-64CF3B251635}.Debug|x64.ActiveCfg = Debug|x64
+		{4511A844-5522-4E43-970B-64CF3B251635}.Debug|x64.Build.0 = Debug|x64
+		{4511A844-5522-4E43-970B-64CF3B251635}.Debug|x86.ActiveCfg = Debug|Win32
+		{4511A844-5522-4E43-970B-64CF3B251635}.Debug|x86.Build.0 = Debug|Win32
+		{4511A844-5522-4E43-970B-64CF3B251635}.Release|x64.ActiveCfg = Release|x64
+		{4511A844-5522-4E43-970B-64CF3B251635}.Release|x64.Build.0 = Release|x64
+		{4511A844-5522-4E43-970B-64CF3B251635}.Release|x86.ActiveCfg = Release|Win32
+		{4511A844-5522-4E43-970B-64CF3B251635}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E83EF66A-3B70-4A1F-AE44-808AFF801937}
+	EndGlobalSection
+EndGlobal
