@@ -11,7 +11,7 @@
 #include "framebuffer.h"
 #include "display.h"
 #include "camera.h"
-#include "vrsystem.h";
+#include "vrhandler.h";
 
 class Canvas
 {
@@ -22,8 +22,8 @@ public:
         m_camera_right(glm::vec3(0.0f,10.0f,8.0f), glm::vec3(0,0,-1)), m_vr() { InitQuad(); };
     void DrawCanvas();
     bool IsClosed();
-    void UpdateLeftCamera(const glm::vec3& pos, const glm::vec3& dir);
-	void UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir);
+    void UpdateLeftCamera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up);
+	void UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up);
 	void RenderScene(bool leftEye);
 	void RenderLoop();
     
@@ -39,7 +39,7 @@ private:
     Display m_display;
     Framebuffer m_fbo_left,m_fbo_right;
     Camera m_camera_left, m_camera_right;
-	VRsystem m_vr;
+	VRHandler m_vr;
     GLuint m_quad_vertexbuffer, m_sdf_programID, m_windowVAO, m_controllerVAO, m_controllerVertBuffer, m_window_programID;
     GLuint m_texID, m_timeID, m_resolution, m_camPos, m_camDir, m_camUp, m_showstepdepth;
 };

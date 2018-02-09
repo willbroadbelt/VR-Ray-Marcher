@@ -25,11 +25,15 @@ public:
     
     void UpdatePos(const glm::vec3& pos);
     void UpdateDir(const glm::vec3& dir);
+	void UpdateUp(const glm::vec3& up);
     
     
 private:
     glm::vec3 m_position;
     glm::vec3 m_direction;
+	glm::vec3 m_up;
+
+	bool b_defaultUp = false;
     
 };
 

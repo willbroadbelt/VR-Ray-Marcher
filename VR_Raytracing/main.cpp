@@ -7,13 +7,8 @@
 #include "GL/glew.h"
 #include "SDL2\SDL.h"
 #include "glm\glm.hpp"
-//#include <openvr.h>
 
 #include "display.h"
-//#include "shader.h"
-//#include "mesh.h"
-//#include "texture.h"
-//#include "transform.h"
 #include "camera.h"
 #include "framebuffer.h"
 #include "shaderloader.h"

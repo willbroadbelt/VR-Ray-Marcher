@@ -1,16 +1,16 @@
 
 /* 
- * File:   vrsystem.cpp
+ * File:   VRHandler.cpp
  * Author: willbroadbelt
  * 
  * Created on 30 November 2017, 12:17
  */
 
-#include "vrsystem.h"
+#include "vrhandler.h"
 
 #include <stdio.h>
 
-VRsystem::VRsystem() {
+VRHandler::VRHandler() {
 
 	vr::EVRInitError eError = vr::VRInitError_None;
 	m_pHMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
@@ -44,14 +44,15 @@ VRsystem::VRsystem() {
 
 }
 
-void VRsystem::SetupMatrices() {
+
+void VRHandler::SetupMatrices() {
 	m_mat4ProjectionLeft = GetHMDMatrixProjectionEye(vr::Eye_Left);;
 	m_mat4ProjectionRight = GetHMDMatrixProjectionEye(vr::Eye_Right);;
 	m_mat4eyePosLeft = GetHMDMatrixPoseEye(vr::Eye_Left);
 	m_mat4eyePosRight = GetHMDMatrixPoseEye(vr::Eye_Right);
 }
 
-bool VRsystem::submitEyes(GLuint leftTexture, GLuint rightTexture) {
+bool VRHandler::submitEyes(GLuint leftTexture, GLuint rightTexture) {
 
 	if (!m_pHMD->IsInputAvailable()) {
 		printf("Input not available.");
@@ -61,11 +62,15 @@ bool VRsystem::submitEyes(GLuint leftTexture, GLuint rightTexture) {
 	if (m_pHMD) {
 		vr::TrackedDevicePose_t pose[vr::k_unMaxTrackedDeviceCount];
 		vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
-		m_mat4HMDPose = ConvertSteamVRMatrixToMatrix4(pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+		
+		vr::HmdVector3_t position = GetPosition(pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+		vr::HmdQuaternion_t quaternion = GetRotationQuart(pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
 
+		m_position = glm::vec3(position.v[0], position.v[1] - 1, position.v[2]);
+		m_forward = RotateVectorByQuaternion(quaternion, CONST_FORWARD);
+		m_up = RotateVectorByQuaternion(quaternion, CONST_UP);
 
-		//Prints 1, 2
-		//printf("hellovr: submit GLuints %d, %d\n", leftTexture, rightTexture);
+		
 		vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTexture, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
 		vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTexture, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
@@ -74,18 +79,18 @@ bool VRsystem::submitEyes(GLuint leftTexture, GLuint rightTexture) {
 		glFinish();
 		return true;
 	}
-	printf("HMd false.");
+	printf("Hmd false.");
 	return false;
 }
 
 
-void VRsystem::Shutdown()
+void VRHandler::Shutdown()
 {
 	vr::VR_Shutdown();
 	m_pHMD = NULL;
 }
 
-void VRsystem::vrEvent() {
+void VRHandler::vrEvent() {
 
 	vr::VREvent_t event;
 
@@ -117,7 +122,7 @@ void VRsystem::vrEvent() {
 
 }
     
-glm::mat4 VRsystem::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
+glm::mat4 VRHandler::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
 {
 	glm::mat4 matrixObj(
 		matPose.m[0][0], matPose.m[1][0], matPose.m[2][0], 0.0,
@@ -129,7 +134,7 @@ glm::mat4 VRsystem::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPo
 }
   
 
-glm::mat4 VRsystem::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
+glm::mat4 VRHandler::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 {
 	glm::mat4 matMVP;
 	if( nEye == vr::Eye_Left )
@@ -145,9 +150,8 @@ glm::mat4 VRsystem::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 }
 
 
-
   //Taken from sample
-  glm::mat4 VRsystem::GetHMDMatrixProjectionEye( vr::Hmd_Eye nEye )
+  glm::mat4 VRHandler::GetHMDMatrixProjectionEye( vr::Hmd_Eye nEye )
 {
 	if ( !m_pHMD )
 		return glm::mat4();
@@ -164,7 +168,7 @@ glm::mat4 VRsystem::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	);
 }
 
-  glm::mat4 VRsystem::GetHMDMatrixPoseEye(vr::Hmd_Eye nEye)
+  glm::mat4 VRHandler::GetHMDMatrixPoseEye(vr::Hmd_Eye nEye)
 {
 	if ( !m_pHMD )
 		return glm::mat4();
@@ -181,12 +185,12 @@ glm::mat4 VRsystem::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 }
 
 
-  VRsystem::~VRsystem() {
+  VRHandler::~VRHandler() {
 	  Shutdown();
   }
 
   // Get the quaternion representing the rotation
-  vr::HmdQuaternion_t VRsystem::GetRotationQuart(vr::HmdMatrix34_t matrix) {
+  vr::HmdQuaternion_t VRHandler::GetRotationQuart(vr::HmdMatrix34_t matrix) {
 	  vr::HmdQuaternion_t q;
 
 	  q.w = sqrt(fmax(0, 1 + matrix.m[0][0] + matrix.m[1][1] + matrix.m[2][2])) / 2;
@@ -199,20 +203,8 @@ glm::mat4 VRsystem::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	  return q;
   }
 
-  //TDOD: Finish this using http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
-  glm::mat3 QuaternionToRotationMat(vr::HmdQuaternion_t quart) {
-	  double ws = pow(quart.w, 2);
-	  double xs = pow(quart.x, 2);
-	  double ys = pow(quart.y, 2);
-	  double zs = pow(quart.z, 2);
-
-	  glm::mat3 rot = glm::mat3();
-
-	  return rot;
-  }
-
   // Get the vector representing the position
-  vr::HmdVector3_t VRsystem::GetPosition(vr::HmdMatrix34_t matrix) {
+  vr::HmdVector3_t VRHandler::GetPosition(vr::HmdMatrix34_t matrix) {
 	  vr::HmdVector3_t vector;
 
 	  vector.v[0] = matrix.m[0][3];
@@ -222,80 +214,14 @@ glm::mat4 VRsystem::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	  return vector;
   }
 
-  glm::vec3 VRsystem::ParseTrackingFrame() {
 
-	  // Process SteamVR device states
-	  for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
-	  {
-		  // if not connected just skip the rest of the routine
-		  if (!m_pHMD->IsTrackedDeviceConnected(unDevice))
-			  continue;
-
-		  vr::TrackedDevicePose_t trackedDevicePose;
-		  vr::TrackedDevicePose_t *devicePose = &trackedDevicePose;
-
-		  vr::VRControllerState_t controllerState;
-		  vr::VRControllerState_t *ontrollerState_ptr = &controllerState;
-
-		  vr::HmdVector3_t position;
-		  vr::HmdQuaternion_t quaternion;
-		/*
-		  if (vr::VRSystem()->IsInputFocusCapturedByAnotherProcess()) {
-			  char buf[1024];
-
-			  sprintf_s(buf, sizeof(buf), "\nInput Focus by Another Process\n");
-			  printf_s(buf);
-		  }
-		  */
-		  bool bPoseValid = trackedDevicePose.bPoseIsValid;
-		  vr::HmdVector3_t vVel;
-		  vr::HmdVector3_t vAngVel;
-		  vr::ETrackingResult eTrackingResult;
-
-		  // Get what type of device it is and work with its data
-		  vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-		  switch (trackedDeviceClass) {
-		  case vr::ETrackedDeviceClass::TrackedDeviceClass_HMD:
-			  // print stuff for the HMD here, see controller stuff in next case block
-
-			  // get pose relative to the safe bounds defined by the user
-			  vr::VRSystem()->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseStanding, 0, &trackedDevicePose, 1);
-
-			  // get the position and rotation
-			  position = GetPosition(devicePose->mDeviceToAbsoluteTracking);
-			  quaternion = GetRotationQuart(devicePose->mDeviceToAbsoluteTracking);
-			  glm::vec3 forwardDirection = RotateVectorByQuaternion(quaternion, CONST_FORWARD);
-
-
-			  // get some data
-			  vVel = trackedDevicePose.vVelocity;
-			  vAngVel = trackedDevicePose.vAngularVelocity;
-			  eTrackingResult = trackedDevicePose.eTrackingResult;
-			  bPoseValid = trackedDevicePose.bPoseIsValid;
-
-			  // print the tracking data
-			  char buf[1024];
-			  sprintf_s(buf, sizeof(buf), "\nHMD\nx: %.2f y: %.2f z: %.2f\n", position.v[0], position.v[1], position.v[2]);
-			  printf_s(buf);
-			  sprintf_s(buf, sizeof(buf), "qw: %.2f qx: %.2f qy: %.2f qz: %.2f\n", quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-			  printf_s(buf);
-			  sprintf_s(buf, sizeof(buf), "x: %.2f y: %.2f z: %.2f \n", forwardDirection.x, forwardDirection.y, forwardDirection.z);
-			  printf_s(buf);
-
-			  //return glm::vec3(position.v[0], position.v[1]-1, position.v[2]);
-			  return forwardDirection;
-		  }
-			 
-	  }
-  }
-
-  glm::vec3 VRsystem::RotateVectorByQuaternion(vr::HmdQuaternion_t quart, glm::vec3 vec) {
+  glm::vec3 VRHandler::RotateVectorByQuaternion(vr::HmdQuaternion_t quart, glm::vec3 vec) {
 	  
 	  glm::vec3 quartVec3 = glm::vec3(quart.x, quart.y, quart.z);
 	  // Scalar part of the quaternion
 	  float s = quart.w;
 
-	  //Questionable... Fund at https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+	  //Found at https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
 	  glm::vec3 direction = 2.0f * dot(quartVec3, vec) * quartVec3
 		  + (s*s - dot(quartVec3, quartVec3)) * vec
 		  + 2.0f * s * cross(quartVec3, vec);

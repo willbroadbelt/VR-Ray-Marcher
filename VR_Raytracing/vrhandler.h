@@ -1,13 +1,13 @@
 
 /* 
- * File:   vrsystem.h
+ * File:   VRHandler.h
  * Author: willbroadbelt
  *
  * Created on 30 November 2017, 12:17
  */
 
-#ifndef VRSYSTEM_H
-#define VRSYSTEM_H
+#ifndef VRHANDLER_H
+#define VRHANDLER_H
 
 #include <openvr.h>
 #include "SDL2\SDL.h"
@@ -15,19 +15,22 @@
 #include "glm\glm.hpp"
 #include <string>
 
-class VRsystem {
+class VRHandler {
 public:
-    VRsystem();
-	~VRsystem();
+    VRHandler();
+	~VRHandler();
 
 	bool submitEyes(GLuint leftTexture, GLuint rightTexture);
 
 	void vrEvent();
-	glm::vec3 ParseTrackingFrame();
 
 	vr::HmdQuaternion_t GetRotationQuart(vr::HmdMatrix34_t matrix);
 	vr::HmdVector3_t GetPosition(vr::HmdMatrix34_t matrix);
 	glm::vec3 RotateVectorByQuaternion(vr::HmdQuaternion_t quart, glm::vec3 vec);
+
+	inline glm::vec3 GetPosition() { return m_position;  }
+	inline glm::vec3 GetForward() { return m_forward; }
+	inline glm::vec3 GetUp() { return m_up; }
 
 	void Shutdown();
 
@@ -54,8 +57,11 @@ private:
 	glm::mat4 GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
 	glm::mat4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
 
+	glm::vec3 m_position, m_forward, m_up;
+
 	const glm::vec3 CONST_FORWARD = glm::vec3(0, 0, -1);
 	const glm::vec3 CONST_UP = glm::vec3(0, 1, 0);
+	const float CONST_SCALE = 3.0f;
 };
 
-#endif /* VRSYSTEM_H */
+#endif /* VRHANDLER_H */

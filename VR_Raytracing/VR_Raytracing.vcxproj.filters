@@ -24,9 +24,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vrsystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -40,6 +37,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shaderloader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vrhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,7 +65,7 @@
     <ClCompile Include="shaderloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vrsystem.cpp">
+    <ClCompile Include="vrhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

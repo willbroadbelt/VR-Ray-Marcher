@@ -274,6 +274,8 @@ void Canvas::RenderCompanionWindow() {
 	
 	glBindVertexArray(0);
 	glUseProgram(0);
+
+	m_display.Update();
 }
 
 void Canvas::RenderStereoTargets() {
@@ -365,32 +367,26 @@ void Canvas::UpdateUniforms(bool leftEye) {
     
 }
 
-void Canvas::UpdateLeftCamera(const glm::vec3& pos, const glm::vec3& dir) {
+void Canvas::UpdateLeftCamera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up) {
     m_camera_left.UpdatePos(pos);
     m_camera_left.UpdateDir(dir);
+	m_camera_left.UpdateUp(up);
 }
 
-void Canvas::UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir) {
+void Canvas::UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up) {
 	m_camera_right.UpdatePos(pos);
 	m_camera_right.UpdateDir(dir);
+	m_camera_right.UpdateUp(up);
 }
 
 void Canvas::RenderLoop() {
+
 	DrawCanvas();
 	RenderCompanionWindow();
-	
-	m_display.Update();
-	m_vr.submitEyes(m_fbo_left.getTexture(), m_fbo_right.getTexture());
-	m_vr.vrEvent();
-	/*
-	glm::vec3 position = m_vr.ParseTrackingFrame();
-	UpdateLeftCamera(position*8.0f, glm::vec3(0, 0, 1));
-	UpdateRightCamera(position*8.0f, glm::vec3(0, 0, 1));
-	*/
 
-	//Test with parse returning forward direction. Up and down is reversed.
-	glm::vec3 forward = m_vr.ParseTrackingFrame();
-	UpdateLeftCamera(glm::vec3(0,0,8), forward);
-	UpdateRightCamera(glm::vec3(0, 0, 8), forward);
+	m_vr.submitEyes(m_fbo_left.getTexture(), m_fbo_right.getTexture());
+
+	UpdateLeftCamera(m_vr.GetPosition(), m_vr.GetForward(), m_vr.GetUp());
+	UpdateRightCamera(m_vr.GetPosition(), m_vr.GetForward(), m_vr.GetUp());
 
 }
