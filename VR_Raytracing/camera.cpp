@@ -18,9 +18,8 @@ glm::vec3 Camera::GetPos() {
     return m_position;
 }
 
-//Currently only points to 0,0,0 from the position of the camera.
 glm::vec3 Camera::GetDir() {
-    return -glm::normalize(m_direction);
+    return glm::normalize(m_direction);
 }
 
 glm::vec3 Camera::GetUp() {

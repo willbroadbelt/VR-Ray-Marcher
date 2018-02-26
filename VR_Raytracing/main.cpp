@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
         if((int)(counter)%5==0 && clock()-t > 0){
             t = clock() - t;
 			double millisecs = (double)(t)/CLOCKS_PER_SEC;
-           // printf("Frame rate = %f. Or %d ticks.\n",1/millisecs,t);
+            printf("Frame rate = %f. Or %d ticks.\n",1/millisecs,t);
             t = clock();
         }
         

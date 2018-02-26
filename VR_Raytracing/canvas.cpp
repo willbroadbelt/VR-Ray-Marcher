@@ -373,8 +373,11 @@ void Canvas::UpdateLeftCamera(const glm::vec3& pos, const glm::vec3& dir, const 
 	m_camera_left.UpdateUp(up);
 }
 
+//TODO: Find actual IPD
 void Canvas::UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up) {
-	m_camera_right.UpdatePos(pos);
+	glm::vec3 cross = glm::normalize(glm::cross(dir, up));
+	glm::vec3 eyePos = pos + (cross*0.07f);
+	m_camera_right.UpdatePos(eyePos);
 	m_camera_right.UpdateDir(dir);
 	m_camera_right.UpdateUp(up);
 }

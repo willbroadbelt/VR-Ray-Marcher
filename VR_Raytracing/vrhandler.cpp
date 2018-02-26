@@ -63,12 +63,15 @@ bool VRHandler::submitEyes(GLuint leftTexture, GLuint rightTexture) {
 		vr::TrackedDevicePose_t pose[vr::k_unMaxTrackedDeviceCount];
 		vr::VRCompositor()->WaitGetPoses(pose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 		
-		vr::HmdVector3_t position = GetPosition(pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
-		vr::HmdQuaternion_t quaternion = GetRotationQuart(pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+		vr::HmdMatrix34_t poseMatrix = pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
+		vr::HmdVector3_t position = GetPosition(poseMatrix);
+		vr::HmdQuaternion_t quaternion = GetRotationQuart(poseMatrix);
 
 		m_position = glm::vec3(position.v[0], position.v[1] - 1, position.v[2]);
 		m_forward = RotateVectorByQuaternion(quaternion, CONST_FORWARD);
 		m_up = RotateVectorByQuaternion(quaternion, CONST_UP);
+
+		
 
 		
 		vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTexture, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
@@ -226,6 +229,6 @@ glm::mat4 VRHandler::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 		  + (s*s - dot(quartVec3, quartVec3)) * vec
 		  + 2.0f * s * cross(quartVec3, vec);
 
-	  return direction;
+	  return glm::normalize(direction);
 	  
   }
