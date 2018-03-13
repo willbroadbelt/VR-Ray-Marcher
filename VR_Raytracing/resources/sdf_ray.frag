@@ -7,6 +7,7 @@ uniform vec3 camDir;
 uniform vec3 camUp;
 uniform sampler2D tex;
 uniform bool showStepDepth;
+uniform vec4 projectionRaw;
 
 in vec3 pos;
 
@@ -38,7 +39,17 @@ vec3 getBackground(vec3 dir) {
 
 vec3 getRayDir() {
   vec3 xAxis = normalize(cross(camDir, camUp));
-  return normalize(pos.x * (resolution.x / resolution.y) * xAxis + pos.y * camUp + 5 * camDir);
+  float left = projectionRaw.x;
+  float right = projectionRaw.y;
+  float top = projectionRaw.z;
+  float bottom = projectionRaw.w;
+  float horizontal = right-left;
+  float vertical = bottom-top;
+  vec2 p = 2.0 * pos.xy -1;
+
+  //return normalize(pos.x * (resolution.x / resolution.y) * xAxis + pos.y * camUp + 2 * camDir);
+  return normalize(pos.x * (horizontal/vertical) * xAxis + pos.y * camUp + 1 * camDir);
+	//return normalize(p.x * (horizontal/vertical) * xAxis + p.y * camUp + 1 * camDir);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -108,19 +119,81 @@ float TorusScene(vec3 pt){
 	return fScene;
 }
 
-float sceneWithPlane(vec3 pt,float scene){
+//////////////////// ---Test Scenes---  //////////////////////
+
+//Circle of cubes with faces directed towards the center
+// n = number of cubes in circle
+float CircleOfCubes(vec3 pt, int n, float scale){
+    float scene = tCube(pt, vec3(scale,0,0));
+    for(int i = 1; i<n; i++){
+        float angle = 2*i*PI/n ;
+        float cosine = cos(angle);
+        float sine = sin(angle);
+        mat4 rotation = mat4(cosine, 0, -sine, 0, //1st Column
+                            0, 1, 0, 0,
+                            sine, 0, cosine, 0,
+                            scale*cosine, 0, scale*sine, 1);
+        scene = min(scene, cube((inverse(rotation) * vec4(pt,1)).xyz));
+    }
+    return scene;
+}
+
+//Psuedo random number generator - hard to find the origin of this equation
+float rand(vec2 co){
+  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+//Place n cubes at random with faces pointing towards the center
+float RandomCubesCenterFacing(vec3 pt, int n, int scale){
+    float scene = tCube(pt, vec3(scale,0,0));
+    for(int i = 1; i<n; i++){
+        float randomScale = scale * rand(vec2(i,1));
+        float angle = 2*i*PI/n ;
+        float cosine = cos(angle);
+        float sine = sin(angle);
+        mat4 rotation = mat4(cosine, 0, -sine, 0, //1st Column
+                            0, 1, 0, 0,
+                            sine, 0, cosine, 0,
+                            randomScale*cosine, 0, randomScale*sine, 1);
+        scene = min(scene, cube((inverse(rotation) * vec4(pt,1)).xyz));
+    }
+    return scene;
+}
+
+//Place n cubes at random with faces pointing randomly
+float RandomCubes(vec3 pt, int n, int scale){
+    float scene = tCube(pt, vec3(scale,0,0));
+    for(int i = 1; i<n; i++){
+        float randomScale = scale * rand(vec2(i,1));
+        float random = rand(vec2(i,i));
+        float angle = 2*PI*random ;
+        float cosine = cos(angle);
+        float sine = sin(angle);
+        mat4 rotation = mat4(cosine, 0, -sine, 0, //1st Column
+                            0, 1, 0, 0,
+                            sine, 0, cosine, 0,
+                            randomScale*cosine, 0, randomScale*sine, 1);
+        scene = min(scene, cube((inverse(rotation) * vec4(pt,1)).xyz));
+    }
+    return scene;
+}
+
+//Returns the scene to use (used so only have to update in one place)
+float TestScene(vec3 pt){
+    return RandomCubes(pt, 3, 6);
+    //return CubesAndSpheres(pt);
+}
+
+float sceneWithPlane(vec3 pt){
 	float plane = sdPlane(pt-vec3(0,-1,0), vec4(0,1,0,1));
+        float scene = TestScene(pt);
   	return min(scene, plane);
 }
-
-
-vec3 getNormal(vec3 pt) {
-  return normalize(GRADIENT(pt, sphere));
-}
+///////////////////////////////////////////////////
 
 vec3 getColor(vec3 pt) {
 if(pt.y<-1){
-	float objs = CubesAndSpheres(pt);
+	float objs = TestScene(pt);
 	float split = mod(objs,1);
 	float border = mod(objs,5);
 	if(4.75<=border){
@@ -129,7 +202,7 @@ if(pt.y<-1){
 		return mix(vec3(0.4,1,0.4),vec3(0.4,0.4,1), split);
 	}
 }else{
-  return vec3(1);
+  return vec3(0.8,0.8,0.8);
 }
 
 }
@@ -137,33 +210,50 @@ if(pt.y<-1){
 ///////////////////////////////////////////////////////////////////////////////
 
 float shade(vec3 eye, vec3 pt, vec3 n) {
-  float val = 0;
-  float ambCo = 0.4;//Supposed to be 0.1 but is quite dark.
+  float diffuse = 0;
+  float specular = 0;
+  float ambient = 0.1;
   float diffCo = 1;
-  float specCo  = 1;
+  float specCo  = 0.4;
   float specShin = 256;
   
   vec3 e = normalize(pt-eye);
   
-  val += ambCo;  // Ambient
-  
   
   for (int i = 0; i < LIGHT_POS.length(); i++) {
     vec3 l = normalize(LIGHT_POS[i] - pt); 
-    float nDotL = clamp(0,dot(n, l), 1);
-    vec3 r = (reflect(l,n));
+    float nDotL = clamp(dot(n, l),0.0, 1.0);
+    vec3 r = (reflect(-l,n));
     
-    val += diffCo * nDotL;
-    val += specCo * pow(clamp(0, dot(e,r), 1),specShin);
+    diffuse += diffCo * nDotL;
+    specular += specCo * pow(clamp(0, dot(e,r), 1),specShin);
   }
-  return val;
+  return ambient + diffuse + specular;
+}
+
+float getShadow(vec3 pt) {
+  vec3 lightDir = normalize(LIGHT_POS[0] - pt);
+  float kd = 1;
+  int step = 0;
+
+  for (float t = 0.1; t < length(LIGHT_POS[0] - pt) && step < RENDER_DEPTH && kd > 0.001; ) {
+    float d = TestScene(pt + t * lightDir);
+    if (d < 0.001) {
+      kd = 0;
+    } else {
+      kd = min(kd, 16 * d / t);
+    }
+    t += d;
+    step++;
+  }
+  return kd;
 }
 
 vec3 illuminate(vec3 camPos, vec3 rayDir, vec3 pt) {
   vec3 c, n;
-  n = getNormal(pt);
+  n = normalize(GRADIENT(pt, sceneWithPlane));
   c = getColor(pt);
-  return shade(camPos, pt, n) * c;
+  return shade(camPos, pt, n) * c * (0.1 + getShadow(pt));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,8 +269,7 @@ vec3 raymarch(vec3 camPos, vec3 rayDir) {
 
   for (float d = 1000; step < RENDER_DEPTH && abs(d) > CLOSE_ENOUGH; t += abs(d)) {
    // d = cube(camPos + t * rayDir);
-   d = sceneWithPlane(camPos + t * rayDir,CubesAndSpheres(camPos + t * rayDir));
-   //d = sceneWithPlane(camPos + t * rayDir,TorusScene(camPos + t * rayDir));
+    d = sceneWithPlane(camPos + t * rayDir);
     step++;
   }
 

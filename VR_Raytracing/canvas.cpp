@@ -341,6 +341,7 @@ void Canvas::UniformHandles() {
     m_camPos = glGetUniformLocation(m_sdf_programID, "camPos");
     m_camDir = glGetUniformLocation(m_sdf_programID, "camDir");
     m_camUp = glGetUniformLocation(m_sdf_programID, "camUp");
+	m_projectionRaw = glGetUniformLocation(m_sdf_programID, "projectionRaw");
     m_showstepdepth = glGetUniformLocation(m_sdf_programID, "showStepDepth");
 }
 
@@ -349,6 +350,17 @@ void Canvas::UpdateUniforms(bool leftEye) {
     glUniform2f(m_resolution, (GLfloat)m_fbo_left.GetWidth(), (GLfloat)m_fbo_left.GetHeight());
     glUniform1i(m_showstepdepth, (GLuint)0);// 1/0 - T/F
     glm::vec3 pos, dir, up;
+	pos = m_camera_left.GetPos();
+	dir = m_camera_left.GetDir();
+	up = m_camera_left.GetUp();
+	glUniform3f(m_camPos, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
+	glUniform3f(m_camDir, (GLfloat)dir.x, (GLfloat)dir.y, (GLfloat)dir.z);
+	glUniform3f(m_camUp, (GLfloat)up.x, (GLfloat)up.y, (GLfloat)up.z);
+
+	glm::vec4 proj = m_vr.getProjectionRaw(leftEye);
+	glUniform4f(m_projectionRaw, proj.x, proj.y, proj.z, proj.w);
+
+	/*
     if(leftEye){
         pos = m_camera_left.GetPos();
         dir = m_camera_left.GetDir();
@@ -364,6 +376,7 @@ void Canvas::UpdateUniforms(bool leftEye) {
         glUniform3f(m_camDir, (GLfloat)dir.x, (GLfloat)dir.y, (GLfloat)dir.z);
         glUniform3f(m_camUp, (GLfloat)up.x, (GLfloat)up.y, (GLfloat)up.z);
     }
+	*/
     
 }
 
@@ -376,7 +389,7 @@ void Canvas::UpdateLeftCamera(const glm::vec3& pos, const glm::vec3& dir, const 
 //TODO: Find actual IPD
 void Canvas::UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up) {
 	glm::vec3 cross = glm::normalize(glm::cross(dir, up));
-	glm::vec3 eyePos = pos + (cross*0.07f);
+	glm::vec3 eyePos = pos + (cross*0.062f);
 	m_camera_right.UpdatePos(eyePos);
 	m_camera_right.UpdateDir(dir);
 	m_camera_right.UpdateUp(up);

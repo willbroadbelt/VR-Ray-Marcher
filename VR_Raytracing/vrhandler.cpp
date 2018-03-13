@@ -67,7 +67,7 @@ bool VRHandler::submitEyes(GLuint leftTexture, GLuint rightTexture) {
 		vr::HmdVector3_t position = GetPosition(poseMatrix);
 		vr::HmdQuaternion_t quaternion = GetRotationQuart(poseMatrix);
 
-		m_position = glm::vec3(position.v[0], position.v[1] - 1, position.v[2]);
+		m_position = glm::vec3(position.v[0], position.v[1], position.v[2]);
 		m_forward = RotateVectorByQuaternion(quaternion, CONST_FORWARD);
 		m_up = RotateVectorByQuaternion(quaternion, CONST_UP);
 
@@ -217,6 +217,13 @@ glm::mat4 VRHandler::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	  return vector;
   }
 
+  glm::vec4 VRHandler::getProjectionRaw(bool leftEye) {
+	  float left, right, top, bottom;
+	  vr::Hmd_Eye eye = leftEye ? vr::Eye_Left : vr::Eye_Right;
+	  m_pHMD->GetProjectionRaw(eye, &left, &right, &top, &bottom);
+	  return glm::vec4(left, right, top, bottom);
+  }
+
 
   glm::vec3 VRHandler::RotateVectorByQuaternion(vr::HmdQuaternion_t quart, glm::vec3 vec) {
 	  
@@ -225,9 +232,9 @@ glm::mat4 VRHandler::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	  float s = quart.w;
 
 	  //Found at https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-	  glm::vec3 direction = 2.0f * dot(quartVec3, vec) * quartVec3
-		  + (s*s - dot(quartVec3, quartVec3)) * vec
-		  + 2.0f * s * cross(quartVec3, vec);
+	  glm::vec3 direction = 2.0f * glm::dot(quartVec3, vec) * quartVec3
+		  + (s*s - glm::dot(quartVec3, quartVec3)) * vec
+		  + 2.0f * s * glm::cross(quartVec3, vec);
 
 	  return glm::normalize(direction);
 	  

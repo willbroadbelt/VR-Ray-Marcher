@@ -28,6 +28,8 @@ public:
 	vr::HmdVector3_t GetPosition(vr::HmdMatrix34_t matrix);
 	glm::vec3 RotateVectorByQuaternion(vr::HmdQuaternion_t quart, glm::vec3 vec);
 
+	glm::vec4 getProjectionRaw(bool leftEye);
+
 	inline glm::vec3 GetPosition() { return m_position;  }
 	inline glm::vec3 GetForward() { return m_forward; }
 	inline glm::vec3 GetUp() { return m_up; }

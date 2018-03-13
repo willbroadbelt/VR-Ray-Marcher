@@ -41,7 +41,7 @@ private:
     Camera m_camera_left, m_camera_right;
 	VRHandler m_vr;
     GLuint m_quad_vertexbuffer, m_sdf_programID, m_windowVAO, m_controllerVAO, m_controllerVertBuffer, m_window_programID;
-    GLuint m_texID, m_timeID, m_resolution, m_camPos, m_camDir, m_camUp, m_showstepdepth;
+    GLuint m_texID, m_timeID, m_resolution, m_camPos, m_camDir, m_camUp, m_projectionRaw, m_showstepdepth;
 };
 
 #endif /* CANVAS_H */

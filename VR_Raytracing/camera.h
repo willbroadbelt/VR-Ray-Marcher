@@ -17,6 +17,7 @@ public:
     {
         m_position = pos;
         m_direction = dir;
+		b_defaultUp = false;
     }
 
     glm::vec3 GetPos();
@@ -33,7 +34,7 @@ private:
     glm::vec3 m_direction;
 	glm::vec3 m_up;
 
-	bool b_defaultUp = false;
+	bool b_defaultUp;
     
 };
 
