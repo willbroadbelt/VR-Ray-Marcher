@@ -82,7 +82,7 @@ void Canvas::InitQuad() {
     this->UniformHandles();
     
     glBindVertexArray(0);
-
+	
 	// Create a companion window program
 	m_window_programID = glCreateProgram();
 	GLuint winVertexShader = CreateShader(LoadShader("resources/passthrough.vert"), GL_VERTEX_SHADER);
@@ -113,7 +113,7 @@ void Canvas::InitQuad() {
 	glDeleteShader(winFragmentShader);
 
 	this->UniformHandles();
-
+	
 	glBindVertexArray(0);
 }
 
@@ -146,14 +146,14 @@ void Canvas::DrawCanvas() {
 	
     //Left eye:
     m_fbo_left.Bind(true);
-    m_display.Clear(0.3f, 0.3f, 0.6f, 0.5f);
+	// Clear the screen
+	m_display.Clear(0.3f, 0.3f, 0.6f, 0.5f);
     
     // Render to the screen
     //m_fbo_left.Flush();
 	glEnable(GL_MULTISAMPLE);
 
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
 
     glBindVertexArray(m_windowVAO);
     // Use our shader
@@ -189,9 +189,8 @@ void Canvas::DrawCanvas() {
     //Right Eye:
     m_fbo_right.Bind(false);
     m_display.Clear(0.3f, 0.3f, 0.6f, 0.5f);
-    
     // Render to the screen
-   // m_fbo_right.Flush();
+    //m_fbo_right.Flush();
 	glEnable(GL_MULTISAMPLE);
 
     glBindVertexArray(m_windowVAO);
@@ -226,6 +225,8 @@ void Canvas::DrawCanvas() {
    // m_display.Update();
 
     glBindVertexArray(0);
+	glDisable(GL_MULTISAMPLE);
+	//glUseProgram(0);
 	
 
 }
@@ -397,12 +398,16 @@ void Canvas::UpdateRightCamera(const glm::vec3& pos, const glm::vec3& dir, const
 
 void Canvas::RenderLoop() {
 
+	
 	DrawCanvas();
 	RenderCompanionWindow();
+	
 
 	m_vr.submitEyes(m_fbo_left.getTexture(), m_fbo_right.getTexture());
 
 	UpdateLeftCamera(m_vr.GetPosition(), m_vr.GetForward(), m_vr.GetUp());
 	UpdateRightCamera(m_vr.GetPosition(), m_vr.GetForward(), m_vr.GetUp());
+	
+	
 
 }

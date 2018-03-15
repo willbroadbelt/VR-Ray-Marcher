@@ -61,6 +61,8 @@ private:
 
 	glm::vec3 m_position, m_forward, m_up;
 
+	uint32_t m_renderWidth, m_renderHeight;
+
 	const glm::vec3 CONST_FORWARD = glm::vec3(0, 0, -1);
 	const glm::vec3 CONST_UP = glm::vec3(0, 1, 0);
 	const float CONST_SCALE = 3.0f;

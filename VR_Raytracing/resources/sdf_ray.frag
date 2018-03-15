@@ -180,7 +180,7 @@ float RandomCubes(vec3 pt, int n, int scale){
 
 //Returns the scene to use (used so only have to update in one place)
 float TestScene(vec3 pt){
-    return RandomCubes(pt, 3, 6);
+    return CircleOfCubes(pt, 10, 6);
     //return CubesAndSpheres(pt);
 }
 

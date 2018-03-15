@@ -42,6 +42,9 @@ VRHandler::VRHandler() {
 		printf("Compositor initialization failed. See log file for details\n");
 	}
 
+	m_pHMD->GetRecommendedRenderTargetSize(&m_renderWidth, &m_renderHeight);
+	//printf("Width: %i, Height: %i", m_renderWidth, m_renderHeight);
+
 }
 
 
