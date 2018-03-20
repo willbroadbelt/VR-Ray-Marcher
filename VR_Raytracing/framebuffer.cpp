@@ -73,7 +73,6 @@ void Framebuffer::Bind(bool left)
 void Framebuffer::Flush()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //glViewport(0, 0, m_width, m_height);
 }
 
 Framebuffer::~Framebuffer()
@@ -93,7 +92,7 @@ void Framebuffer::ActivateTexture()
 void Framebuffer::DrawFramebuffer() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_resolveFramebufferId);
-	glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
+	glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, 500, 500,
 		GL_COLOR_BUFFER_BIT,
 		GL_LINEAR);
 
@@ -104,10 +103,7 @@ void Framebuffer::DrawFramebuffer() {
 
 //Problem area
 void Framebuffer::Renderwindow() {
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_resolveTextureId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	
 }

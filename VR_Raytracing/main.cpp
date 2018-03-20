@@ -21,8 +21,10 @@ const int WINDOW_HEIGHT = 500;
 const int RENDER_WIDTH = 1586;
 const int RENDER_HEIGHT = 1762;
 
+const bool TEST_MODE = false;
+
 int main(int argc, char** argv) {
-    Canvas canvas(RENDER_WIDTH, RENDER_HEIGHT);
+    Canvas canvas(RENDER_WIDTH, RENDER_HEIGHT, TEST_MODE);
     
     float counter = 0.0f,sin, cos;
     
@@ -30,15 +32,10 @@ int main(int argc, char** argv) {
     
     while(!canvas.IsClosed())
     {
-        t  = clock();
-        
-        sin = sinf(counter);
-        cos = cosf(counter);
-        
-        //NB: Check if event occurred and only update screen if it has.
-        //canvas.UpdateLeftCamera(glm::vec3(0,0,8),glm::vec3(sin,0,cos));
-        canvas.RenderLoop();
-        
+		
+        //t  = clock();
+		canvas.RenderLoop();
+        /*
         //Frame rate
         if((int)(counter)%5==0 && clock()-t > 0){
             t = clock() - t;
@@ -48,7 +45,7 @@ int main(int argc, char** argv) {
         }
         
         counter+=0.01f;
- 
+	*/
     }
     
     return 0;

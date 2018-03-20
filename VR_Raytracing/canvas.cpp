@@ -12,6 +12,8 @@
 
 #include "canvas.h"
 #include "shaderloader.h"
+#include "chrono";
+#include "ctime";
 
 
 void Canvas::InitQuad() {
@@ -25,23 +27,6 @@ void Canvas::InitQuad() {
         1.0f, 1.0f
     };
     
-    /*
-    static const GLfloat g_quad_vertex_buffer_data[] = {
-        -1.0f, -1.0f,
-        0.0f, -1.0f,
-        0.0f, 1.0f,
-        -1.0f, -1.0f,
-        0.0f, 1.0f,
-        -1.0f, 1.0f,
-        
-        0.0f, -1.0f,
-        1.0f, -1.0f,
-        1.0f, 1.0f,
-        0.0f, -1.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f
-    };
-    */
     
     glGenVertexArrays(1, &m_windowVAO);
     glBindVertexArray(m_windowVAO);
@@ -117,43 +102,17 @@ void Canvas::InitQuad() {
 	glBindVertexArray(0);
 }
 
-void Canvas::InitController() {
-
-	glGenVertexArrays(1, &m_controllerVAO);
-	glBindVertexArray(m_controllerVAO);
-
-	glGenBuffers(1, &m_controllerVertBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_controllerVertBuffer);
-
-	GLuint stride = 2 * 3 * sizeof(float);
-	uintptr_t offset = 0;
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
-
-	offset += sizeof(glm::vec3);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
-
-	glBindVertexArray(0);
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_controllerVertBuffer);
-
-}
 
 void Canvas::DrawCanvas() {
-	
+	auto start = std::chrono::system_clock::now();
+
     //Left eye:
     m_fbo_left.Bind(true);
 	// Clear the screen
 	m_display.Clear(0.3f, 0.3f, 0.6f, 0.5f);
     
     // Render to the screen
-    //m_fbo_left.Flush();
 	glEnable(GL_MULTISAMPLE);
-
-    
 
     glBindVertexArray(m_windowVAO);
     // Use our shader
@@ -185,12 +144,11 @@ void Canvas::DrawCanvas() {
 	glDisable(GL_MULTISAMPLE);
 
 	m_fbo_left.DrawFramebuffer();
+	glBindTexture(GL_TEXTURE_2D, 0);
     
     //Right Eye:
     m_fbo_right.Bind(false);
     m_display.Clear(0.3f, 0.3f, 0.6f, 0.5f);
-    // Render to the screen
-    //m_fbo_right.Flush();
 	glEnable(GL_MULTISAMPLE);
 
     glBindVertexArray(m_windowVAO);
@@ -205,14 +163,7 @@ void Canvas::DrawCanvas() {
     //Right eye vertices
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, m_quad_vertexbuffer);
-    glVertexAttribPointer(
-            0, // attribute 0. Must match the layout in the shader.
-            2, // size
-            GL_FLOAT, // type
-            GL_FALSE, // normalized?
-            0, // stride
-            (void*) 0 // array buffer offset
-            );
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
     
     // Draw the triangles 
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -225,8 +176,21 @@ void Canvas::DrawCanvas() {
    // m_display.Update();
 
     glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_MULTISAMPLE);
-	//glUseProgram(0);
+
+	glUseProgram(0);
+	glFlush();
+	glFinish();
+
+	auto finish = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_time = finish - start;
+	
+	if (b_test) {
+		m_timingFile << elapsed_time.count() << "\n";
+	}
+
+
 	
 
 }
@@ -239,36 +203,22 @@ void Canvas::RenderCompanionWindow() {
 	glBindVertexArray(m_windowVAO);
 	glUseProgram(m_window_programID);
 
-	// render left eye (first half of index array )
-	m_fbo_left.Renderwindow();
+	// render left eye
+	m_fbo_left.ActivateTexture();
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, m_quad_vertexbuffer);
-	glVertexAttribPointer(
-		0, // attribute 0. Must match the layout in the shader.
-		2, // size
-		GL_FLOAT, // type
-		GL_FALSE, // normalized?
-		0, // stride
-		(void*)0 // array buffer offset
-	);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// Draw the triangles 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glViewport(500, 0, 500, 500);
 
-	// render right eye (second half of index array )
-	m_fbo_right.Renderwindow();
+	// render right eye
+	m_fbo_right.ActivateTexture();
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, m_quad_vertexbuffer);
-	glVertexAttribPointer(
-		0, // attribute 0. Must match the layout in the shader.
-		2, // size
-		GL_FLOAT, // type
-		GL_FALSE, // normalized?
-		0, // stride
-		(void*)0 // array buffer offset
-	);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// Draw the triangles 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -279,57 +229,6 @@ void Canvas::RenderCompanionWindow() {
 	m_display.Update();
 }
 
-void Canvas::RenderStereoTargets() {
-	bool leftEye = true;
-	bool rightEye = false;
-
-	glClearColor(0.3f, 0.3f, 0.6f, 0.5f);
-	//glEnable(GL_MULTISAMPLE);
-
-	// Left Eye
-	m_fbo_left.Bind(leftEye);
-	RenderScene(leftEye);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//glDisable(GL_MULTISAMPLE);
-
-	m_fbo_left.DrawFramebuffer();
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	//glEnable(GL_MULTISAMPLE);
-
-	//Right eye
-	m_fbo_right.Bind(rightEye);
-	RenderScene(rightEye);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//glDisable(GL_MULTISAMPLE);
-
-	m_fbo_right.DrawFramebuffer();
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-}
-
-void Canvas::RenderScene(bool leftEye) {
-
-	glUseProgram(m_sdf_programID);
-	this->UpdateUniforms(leftEye);
-	glBindVertexArray(m_quad_vertexbuffer);
-	glVertexAttribPointer(
-		0, // attribute 0. Must match the layout in the shader.
-		2, // size
-		GL_FLOAT, // type
-		GL_FALSE, // normalized?
-		0, // stride
-		(void*)0 // array buffer offset
-	);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
-
-}
 
 bool Canvas::IsClosed() {
     return m_display.IsClosed();
@@ -347,13 +246,22 @@ void Canvas::UniformHandles() {
 }
 
 void Canvas::UpdateUniforms(bool leftEye) {
-    glUniform1f(m_timeID, 1);
+	m_backgroundTexture.Bind(0);
+	glUniform1f(m_timeID, 1);
     glUniform2f(m_resolution, (GLfloat)m_fbo_left.GetWidth(), (GLfloat)m_fbo_left.GetHeight());
     glUniform1i(m_showstepdepth, (GLuint)0);// 1/0 - T/F
     glm::vec3 pos, dir, up;
-	pos = m_camera_left.GetPos();
-	dir = m_camera_left.GetDir();
-	up = m_camera_left.GetUp();
+	if (leftEye) {
+		pos = m_camera_left.GetPos();
+		dir = m_camera_left.GetDir();
+		up = m_camera_left.GetUp();
+	}
+	else {
+		pos = m_camera_right.GetPos();
+		dir = m_camera_right.GetDir();
+		up = m_camera_right.GetUp();
+	}
+	
 	glUniform3f(m_camPos, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
 	glUniform3f(m_camDir, (GLfloat)dir.x, (GLfloat)dir.y, (GLfloat)dir.z);
 	glUniform3f(m_camUp, (GLfloat)up.x, (GLfloat)up.y, (GLfloat)up.z);
@@ -361,23 +269,6 @@ void Canvas::UpdateUniforms(bool leftEye) {
 	glm::vec4 proj = m_vr.getProjectionRaw(leftEye);
 	glUniform4f(m_projectionRaw, proj.x, proj.y, proj.z, proj.w);
 
-	/*
-    if(leftEye){
-        pos = m_camera_left.GetPos();
-        dir = m_camera_left.GetDir();
-        up = m_camera_left.GetUp();
-        glUniform3f(m_camPos, (GLfloat)pos.x, (GLfloat)pos.y , (GLfloat)pos.z);
-        glUniform3f(m_camDir, (GLfloat)dir.x, (GLfloat)dir.y, (GLfloat)dir.z);
-        glUniform3f(m_camUp, (GLfloat)up.x, (GLfloat)up.y, (GLfloat)up.z);
-    }else{
-        pos = m_camera_right.GetPos();
-        dir = m_camera_right.GetDir();
-        up = m_camera_right.GetUp();
-        glUniform3f(m_camPos, (GLfloat)pos.x, (GLfloat)pos.y , (GLfloat)pos.z);
-        glUniform3f(m_camDir, (GLfloat)dir.x, (GLfloat)dir.y, (GLfloat)dir.z);
-        glUniform3f(m_camUp, (GLfloat)up.x, (GLfloat)up.y, (GLfloat)up.z);
-    }
-	*/
     
 }
 

@@ -45,11 +45,9 @@ vec3 getRayDir() {
   float bottom = projectionRaw.w;
   float horizontal = right-left;
   float vertical = bottom-top;
-  vec2 p = 2.0 * pos.xy -1;
+  vec2 p = 0.5 * pos.xy + 0.5;
 
-  //return normalize(pos.x * (resolution.x / resolution.y) * xAxis + pos.y * camUp + 2 * camDir);
-  return normalize(pos.x * (horizontal/vertical) * xAxis + pos.y * camUp + 1 * camDir);
-	//return normalize(p.x * (horizontal/vertical) * xAxis + p.y * camUp + 1 * camDir);
+  return normalize((left + p.x * horizontal) * xAxis+ (top + p.y * vertical) * camUp + camDir);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -180,7 +178,7 @@ float RandomCubes(vec3 pt, int n, int scale){
 
 //Returns the scene to use (used so only have to update in one place)
 float TestScene(vec3 pt){
-    return CircleOfCubes(pt, 10, 6);
+    return CircleOfCubes(pt, 4, 6);
     //return CubesAndSpheres(pt);
 }
 
