@@ -25,7 +25,7 @@ public:
         m_camera_left(glm::vec3(0.0f,10.0f,8.0f), glm::vec3(0,0,-1)),
         m_camera_right(glm::vec3(0.0f,10.0f,8.0f), glm::vec3(0,0,-1)), m_vr(),
 		m_backgroundTexture("resources/background_sky.jpg"), b_test(testMode) {InitQuad();
-		if(testMode) m_timingFile.open("o_scene_num_scale_depth.txt");
+		if(testMode) m_timingFile.open("o_infinteobjs_x_4_800.txt");//o_scene_num_scale_depth.txt
 	};
     void DrawCanvas();
     bool IsClosed();

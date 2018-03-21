@@ -14,7 +14,7 @@ in vec3 pos;
 out vec3 color;
 
 #define PI 3.1415926535897932384626433832795
-#define RENDER_DEPTH 100
+#define RENDER_DEPTH 800
 #define CLOSE_ENOUGH 0.00001
 
 #define BACKGROUND -1
@@ -176,10 +176,18 @@ float RandomCubes(vec3 pt, int n, int scale){
     return scene;
 }
 
+//Infinite objects
+float InfiniteObjs(vec3 pt){
+	vec3 c = vec3(4,0,4);
+	vec3 q = mod(pt,c) - 0.5*c;
+	return cube(q);
+}
+
 //Returns the scene to use (used so only have to update in one place)
 float TestScene(vec3 pt){
-    return CircleOfCubes(pt, 4, 6);
-    //return CubesAndSpheres(pt);
+   	return InfiniteObjs(pt); 
+	//return RandomCubesCenterFacing(pt, 9, 6);
+    	//return CubesAndSpheres(pt);
 }
 
 float sceneWithPlane(vec3 pt){
