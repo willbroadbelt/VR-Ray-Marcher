@@ -6,4 +6,6 @@ It uses a GLSL fragment shader to hold a signed distance funciton ray marcher to
 The ray-marcher can be found in ```resources/sdf_ray.frag```
 and the main loop is run from ```canvas.cpp```
 
-Written in MS VisualStudios
+![companion window image](https://imgur.com/a/sBaGbws)
+
+Written in MS VisualStudio
